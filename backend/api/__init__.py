@@ -1,22 +1,28 @@
+import pymongo
 import os
 
 from flask import Flask
+from flask import jsonify
+from flask import request
 from flask_pymongo import PyMongo
 
+app = Flask(__name__)
 
-def create_app(test_config=None):
-    # create and configure the app
-    app = Flask(__name__)
-    app.config["MONGO_URI"] = "mongodb+srv://alicesf2:Q9p0y$*hN15I@team4-y2pw0.mongodb.net/test?retryWrites=true&w=majority"
-    mongo = PyMongo(app)
+mongo = pymongo.MongoClient(
+    "mongodb+srv://alicesf2:<password>@team4-y2pw0.mongodb.net/test?retryWrites=true&w=majority")
+db = pymongo.database.Database(mongo, 'team4')
+users = pymongo.collection.Collection(db, 'users')
 
-    # a simple page that says hello
-    @app.route('/')
-    def hello():
-        return 'Hello, World!'
 
-    @app.route('/goodbye')
-    def goodbye():
-        return "Goodbye, World!"
+# a simple page that says hello
+@app.route('/', methods=['GET'])
+def hello():
+    output = []
+    for u in users.find():
+        output.append({'username': u['username']})
+    return jsonify({'result': output})
 
-    return app
+
+@app.route('/goodbye')
+def goodbye():
+    return "Goodbye, World!"
